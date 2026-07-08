@@ -1,0 +1,76 @@
+/* === Tailwind 基础指令 === */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === CSS 变量：定义明暗双主题色 === */
+@layer base {
+  :root {
+    /* 浅色模式 - RGB 数字格式，方便 Tailwind 加透明度 */
+    --color-primary: 37 99 235;
+    --color-primary-light: 96 165 250;
+    --color-bg: 255 255 255;
+    --color-bg-card: 248 250 252;
+    --color-text: 15 23 42;
+    --color-text-muted: 100 116 139;
+    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  }
+
+  .dark {
+    /* 深色模式 - RGB 数字格式 */
+    --color-primary: 96 165 250;
+    --color-primary-light: 59 130 246;
+    --color-bg: 15 23 42;
+    --color-bg-card: 30 41 59;
+    --color-text: 241 245 249;
+    --color-text-muted: 148 163 184;
+  }
+
+  /* 平滑过渡：切换暗色模式时有动画 */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-text));
+    font-family: var(--font-sans);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* 代码字体 */
+  code,
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  /* 链接默认样式 */
+  a {
+    color: rgb(var(--color-primary));
+    transition: opacity 0.2s;
+  }
+  a:hover {
+    opacity: 0.8;
+  }
+}
+
+/* === Tailwind 组件层：自定义可复用类 === */
+@layer components {
+  .container-page {
+    @apply max-w-3xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .card {
+    @apply bg-bg-card rounded-lg p-6 shadow-sm border border-transparent;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-white font-medium;
+    @apply hover:opacity-90 transition-opacity;
+  }
+
+  .tag {
+    @apply inline-block px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary font-medium;
+  }
+}

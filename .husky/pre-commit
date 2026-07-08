@@ -1,0 +1,8 @@
+# pre-commit hook：提交前自动检查代码质量
+# 如果 lint 不通过，提交会被阻止
+
+echo "🔍 正在运行 ESLint 检查..."
+npm run lint
+
+echo "🔍 正在检查 TypeScript 类型..."
+npx tsc --noEmit

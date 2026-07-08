@@ -1,0 +1,111 @@
+---
+title: "Next.js App Router 入门指南：从 Pages Router 到新范式"
+date: "2024-07-10"
+description: "Next.js 13 引入的 App Router 是一次范式升级。这篇文章带你理解文件即路由、Server Component 和 Client Component 的区别，以及如何在实际项目中应用它们。"
+tags: ["Next.js", "React", "App Router", "教程"]
+---
+
+## App Router 是什么？
+
+Next.js 13 推出了全新的 **App Router**（`app/` 目录），取代了传统的 Pages Router（`pages/` 目录）。它不是简单升级，而是一次**编程范式的改变**。
+
+## 核心概念一：文件即路由
+
+Pages Router 时代，路由配置是这样的：
+
+```tsx
+// pages/posts/[id].tsx  → 动态路由需要手动创建文件
+// 但嵌套路由难处理（需要 next/router + 布局组件）
+```
+
+App Router 把路由和文件系统直接绑定：
+
+```
+app/
+├── page.tsx           → /
+├── about/page.tsx     → /about
+├── posts/
+│   ├── page.tsx       → /posts
+│   └── [slug]/
+│       └── page.tsx   → /posts/:slug  ← 动态路由，[slug] 是参数
+```
+
+**好在哪？**
+- 路由一目了然，看文件结构就知道有哪些页面
+- 嵌套用文件夹嵌套，自然清晰
+- 可以用 `layout.tsx` 给一组页面共享布局（不用在每个页面重复写 Header/Footer）
+
+## 核心概念二：Server Component 优先
+
+App Router 里所有组件**默认是 Server Component**。
+
+```tsx
+// 这个组件跑在服务器上，没有 useState / useEffect
+// 可以直接读文件、查数据库、调内部 API
+export default async function Page() {
+  const posts = await db.posts.findMany(); // ✅ 直接访问数据库
+  return <div>{posts.length}</div>;
+}
+```
+
+**Server Component 的限制：**
+
+```tsx
+export default function Page() {
+  const [count, setCount] = useState(0); // ❌ 报错！服务端没有 useState
+  useEffect(() => { ... }, []);           // ❌ 报错！
+
+  return <button onClick={() => {...}}>点击</button>; // ❌ 报错！服务端没有事件
+}
+```
+
+**需要交互时加 `"use client"`：**
+
+```tsx
+"use client"; // 声明这是客户端组件
+import { useState } from "react";
+
+export default function Counter() {
+  const [count, setCount] = useState(0); // ✅ 现在 OK
+  return <button onClick={() => setCount(count + 1)}>{count}</button>;
+}
+```
+
+## 核心概念三：数据获取
+
+Pages Router：`getServerSideProps` / `getStaticProps`：
+
+```tsx
+// 老写法：每个页面定义一个导出函数
+export async function getServerSideProps() {
+  const data = await fetchData();
+  return { props: { data } };
+}
+```
+
+App Router：直接在 Page 组件里 async：
+
+```tsx
+// 新写法：async/await 原生支持
+export default async function Page() {
+  const data = await fetchData();
+  return <div>{data}</div>;
+}
+```
+
+**简化了心智模型，代码量减少约 40%。**
+
+## 总结
+
+| 对比维度 | Pages Router | App Router |
+|---------|-------------|------------|
+| 路由 | 文件系统 | 文件系统 + 文件夹嵌套 |
+| 组件类型 | 都是客户端 | 默认服务端，按需客户端 |
+| 数据获取 | 特殊函数（getStaticProps 等） | async/await 直接写在组件里 |
+| 布局系统 | 手动在每个页面加 Header/Footer | layout.tsx 自动继承 |
+| 学习成本 | 低 | 中（需理解 SSR/SSG/ISR） |
+
+---
+
+我已经在我们这个博客项目里用上了 App Router，所有页面都是 Server Component。
+下一篇我会分享如何在这个项目里使用 **MDX** 来渲染文章——敬请期待！
