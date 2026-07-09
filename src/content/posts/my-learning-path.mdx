@@ -1,0 +1,141 @@
+---
+title: "从零搭建博客：我的 Next.js 学习之路"
+date: "2024-07-12"
+description: "记录我用 Next.js 14 + TypeScript + Tailwind 搭建个人技术博客的完整过程。踩过的坑、学到的经验、以及对未来的计划。"
+tags: ["Next.js", "TypeScript", "前端", "学习笔记"]
+---
+
+## 起因
+
+一直想有一个属于自己的技术博客，不是为了给别人看，而是**给自己用**。
+
+以前学了就忘，忘了又学，一直恶性循环。直到有一天我看到一句话：
+
+> "教是最好的学。" —— Feynman
+
+于是我决定：把学到的东西写成文章，写成博客。只要你能把一个概念讲清楚，说明你真的懂了。
+
+## 为什么选 Next.js？
+
+市面上的博客框架多如牛毛：Hexo、Hugo、Gatsby、WordPress......
+
+我选 Next.js 的原因很简单：
+
+| 考量 | Next.js | 纯静态生成器 |
+|------|---------|------------|
+| **一石二鸟** | 既当博客，又练企业级技术栈 | 学会了对找工作没啥用 |
+| **React 生态** | React + TS，企业最抢手的组合 | 学了一门小众技术 |
+| **面试加分** | 面试时能讲"我用 App Router 做了 SSR/SSG" | 面试官可能没听过 |
+| **扩展自由** | 想加什么功能都能写 | 受限于模板和插件 |
+
+**一句话**：做这个项目，既产出作品，又练技能。
+
+## 项目技术栈
+
+这个博客的技术选型：
+
+- **框架**：Next.js 14 (App Router)
+- **语言**：TypeScript 5.4
+- **样式**：Tailwind CSS 3.4
+- **内容**：MDX (Markdown + React 组件)
+- **搜索**：Pagefind (静态搜索，无需后端)
+- **部署**：Vercel / GitHub Pages
+
+关键的 npm 依赖：
+
+- next 14.2.5
+- react 18.3.1
+- next-mdx-remote 5.0.0
+- next-themes 0.3.0
+- rehype-pretty-code 0.13.2
+- remark-gfm 4.0.0
+
+## 搭建过程：踩的坑
+
+### 坑 1：中文路径导致模块找不到
+
+一开始项目放在 `E:\Project\待定\my-tech-blog`，结果报错：
+
+```
+Error: Cannot find module 'next-mdx-remote/rsc'
+```
+
+排查半天才发现：**中文路径导致 Node.js 模块解析异常**。
+
+**解决**：把项目挪到纯英文路径 `E:\Project\my-tech-blog`。
+
+**教训**：以后做项目，路径只用英文 + 小写 + 短横线。
+
+### 坑 2：CSS 变量格式导致 Tailwind 报错
+
+写 `.tag` 的时候用了 `bg-primary/10`（给背景加 10% 透明度），结果报错：
+
+```
+The `bg-primary/10` class does not exist.
+```
+
+原因是 CSS 变量用了十六进制 `#2563eb`，Tailwind 无法给它加透明度。
+
+**解决**：改用 RGB 数字格式：
+
+```css
+/* 错误：十六进制无法加透明度 */
+--color-primary: #2563eb;
+
+/* 正确：RGB 数字格式 + Tailwind 透明度 */
+--color-primary: 37 99 235;
+```
+
+然后在 `tailwind.config.ts` 里用 `<alpha-value>` 占位符：
+
+```typescript
+primary: {
+  DEFAULT: "rgb(var(--color-primary) / <alpha-value>)",
+},
+```
+
+### 坑 3：ESLint / TypeScript 版本不兼容
+
+`eslint-config-next` 依赖的 `@typescript-eslint` 只支持 TypeScript 5.5 以下，但我一开始装了 TypeScript 5.9。
+
+**解决**：把 TypeScript 降到 5.4.5。
+
+## 目前实现的功能
+
+- ✅ **Next.js App Router**：文件即路由，嵌套用文件夹
+- ✅ **TypeScript 严格模式**：编译期就发现潜在问题
+- ✅ **Tailwind CSS + 暗色模式**：CSS 变量驱动双主题
+- ✅ **MDX 内容**：Markdown 里可以嵌入 React 组件
+- ✅ **代码高亮**：rehype-pretty-code + Vitesse 主题
+- ✅ **响应式设计**：移动端、平板、桌面都适配
+- ✅ **Husky Git Hooks**：提交前自动 lint + 类型检查
+
+## 面试怎么说？
+
+如果面试官问"讲讲你的项目"，我会这么讲：
+
+> "我用 Next.js 14 搭了个博客，用了 App Router + Server Component + MDX。
+>
+> 首先技术选型上，我选 JS 数字格式的 CSS 变量 + Tailwind 的 alpha-value 实现了**一套代码适配明暗双主题**，避免了写两套 CSS。
+>
+> 然后工程规范上，我用了 **Husky + ESLint + TypeScript** 三层卡口，每次 commit 自动检查，保证代码质量。
+>
+> 最后性能上，通过 `generateStaticParams` + `force-static` 把所有博客文章**构建时预渲染成静态 HTML**，Lighthouse 评分可以达到 90+。"
+
+## 下一步计划
+
+这个博客还会继续迭代：
+
+1. **全文搜索**：接入 Pagefind，实现搜索框
+2. **RSS 订阅**：生成 feed.xml
+3. **评论系统**：接入 Giscus（基于 GitHub Discussions）
+4. **View Counter**：阅读量统计
+5. **SEO 优化**：sitemap.xml + JSON-LD + meta 标签
+
+每完成一个功能，我都会写一篇博客记录。**做项目 + 写文章 = 最优学习路径**。
+
+---
+
+如果你也在学习前端，我建议你**也动手做一个博客**。不需要多好看，能跑就行。关键是**把学到的东西写出来**。
+
+相信我，写一篇博客比你刷十道题更有用。

@@ -23,10 +23,15 @@ const POSTS_DIR = path.join(process.cwd(), "src", "content", "posts");
 export async function getAllPosts(): Promise<PostMeta[]> {
   const files = fs.readdirSync(POSTS_DIR).filter((f) => f.endsWith(".mdx"));
 
-  const posts = files.map((filename) => getPostBySlug(filename.replace(".mdx", "")));
+  // getPostBySlug 返回 Promise，需要用 Promise.all 等待全部完成
+  const posts = await Promise.all(
+    files.map((filename) => getPostBySlug(filename.replace(".mdx", "")))
+  );
 
-  // 按日期倒序（最新文章在前）
-  return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
+  // 过滤掉 null（防御性编程），按日期倒序（最新文章在前）
+  return posts
+    .filter((post): post is PostMeta => post !== null)
+    .sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
 // === 2. 根据 slug 获取单篇文章（详情页用）===
